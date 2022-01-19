@@ -29,12 +29,15 @@ mod_charts_securities_ui <-
       fluidRow(
         column(
           7,
-          withSpinner(
-          plotlyOutput(ns("ratios_plot"),
-            height = "300px"#,
-            # click = ns("plot_click")
-          ), type = 8, color = "lightgreen"
-          ),
+          box(
+            width = NULL,
+            withSpinner(
+            echarts4rOutput(ns("ratios_plot"),
+                            height = "500px"),
+                            # click = ns("plot_click")),
+                            type = 8,
+                            color = "darkgray"
+            )),
           inputPanel(
             selectInput(ns("industry"),
               "Industry:",
@@ -43,11 +46,13 @@ mod_charts_securities_ui <-
             ),
             selectInput(ns("ratio"), "Field:",
               choices = sort(ratio_choices),
-              selected = "net_income_1Q"
+              selected = "roe"
             ),
             checkboxInput(ns("remove_outliers"), "Remove outliers"),
             actionButton(ns("update"), "Update!"),
-            actionButton(ns("toggle_table"), "Show/Hide table")
+            actionButton(ns("toggle_table"), "Show/Hide table"),
+            tags$button("Show alert", onclick="alertGo()"),
+            tags$button("Show conf", onclick="confirmDial()")
           ),
           hidden(
             shiny::dataTableOutput(ns("ratio_table"))
@@ -144,54 +149,46 @@ mod_charts_securities_server <-
                    ns <- NS(id)
                    
                    ratios_data <- reactive({
+                     ######
+                     # input <- list(industry = "retail_general",
+                     #               ratio = "revenue_1Y")
+                     ######
+                     
                      input$update
+                     
                      ratios %>% 
-                       filter(industry_damodaran == input$industry)
+                       filter(industry_damodaran == isolate(input$industry)) %>% 
+                       select(ticker, report_date, isolate(input$ratio)) %>%
+                       pivot_longer(where(is.numeric),
+                                    names_to = "ratio",
+                                    values_to = "value") %>%
+                       drop_na(value) %>%
+                       mutate(value = signif(value, 2),
+                              Median = signif(median(value,
+                                                     na.rm = TRUE)),
+                              2) %>%
+                       rename(Ticker = ticker)
                    })
                    
                    plot_data <- reactive({
                      # Don't create reactive data until actionButton is
                      #  clicked
-                     input$update
+                     # input$update
                      
                      # waiter::Waiter$new(id = ns("ratios_plot"),
                      #                    html = spin_ripple())$show()
                      
                      if (!isolate(input$remove_outliers)) {
-                       ratios_data() %>%
-                         # filter(industry_yhoo == "discount_stores")
-                         # filter(industry_yhoo ==
-                         #   isolate(input$industry)) %>%
-                         select(ticker, report_date, isolate(input$ratio)) %>%
-                         pivot_longer(where(is.numeric),
-                                      names_to = "ratio",
-                                      values_to = "value") %>%
-                         drop_na(value) %>%
-                         mutate(value = signif(value, 2),
-                                Median = signif(median(value,
-                                                       na.rm = TRUE)),
-                                2) %>%
-                         rename(Ticker = ticker)
+                       ratios_data()
                      } else {
                        ratios_data() %>%
-                         # filter(industry_yhoo ==
-                         #   isolate(input$industry)) %>%
-                         select(ticker, report_date, isolate(input$ratio)) %>%
-                         pivot_longer(where(is.numeric),
-                                      names_to = "ratio",
-                                      values_to = "value") %>%
-                         drop_na(value) %>%
-                         mutate(value = signif(value, 2),
-                                Median = signif(median(value,
-                                                       na.rm = TRUE)),
-                                2) %>%
                          filter(
                            value < quantile(value, 0.975,
                                             na.rm = TRUE),
                            value > quantile(value, 0.025,
                                             na.rm = TRUE)
-                         ) %>%
-                         rename(Ticker = ticker)
+                         )
+                         
                      }
                    })
                    
@@ -208,44 +205,72 @@ mod_charts_securities_server <-
                    })
                    
                    
-                   output$ratios_plot <- renderPlotly({
+                   
+                   
+                   
+                   
+                   output$ratios_plot <- renderEcharts4r({
                      # Don't create plot outline until actionbButton is
                      #  clicked
-                     req(input$update)
+                     input$update
                      
-                     isolate({
-                       ratio <- input$ratio
-                       industry <- input$industry
-                       min_value <- min_value()
-                       max_value <- max_value()
-                     })
+                     # isolate({
+                       # ratio <- input$ratio
+                       # industry <- input$industry
+                       # min_value <- min_value()
+                       # max_value <- max_value()
+                     # })
                      
-                     plt <- plot_data() %>%
-                       ggplot(aes(x = report_date, y = value)) +
-                       geom_point(
-                         aes(color = Ticker),
-                         size = 1.1,
-                         alpha = 0.7,
-                         na.rm = TRUE
-                       ) +
-                       geom_hline(aes(yintercept = Median),
-                                  color = "red",
-                                  linetype = "dotted") +
-                       expand_limits(y = c(min_value,
-                                           max_value * 1.2)) +
-                       labs(
-                         title = snakecase::to_title_case(as.character(ratio)),
-                         subtitle = industry,
-                         x = "",
-                         y = "%"
-                       ) +
-                       # theme_xkcd() +
-                       theme_minimal() +
-                       theme(axis.title.y = element_text(color = "grey")) #+
-                     # xkcd::xkcdaxis(as.numeric(c(ymd("1999-12-31"),
-                     #                  ymd("2021-12-31"))),
-                     #                c(0, 1e10))
-                     ggplotly(plt)
+                     plot_data() %>%
+                       group_by(Ticker) %>% 
+                       e_chart(x = report_date) %>% 
+                       e_line(serie = value) %>% 
+                       # e_scatter(serie = value, 
+                       #           symbol_size = 5, 
+                       #           legend = FALSE) %>% 
+                       e_tooltip() %>% #trigger="axis") %>% 
+                       e_grid(right = "15%") %>% 
+                       e_title(text = "fields",
+                               subtext = "wow",
+                               left = "center") %>% 
+                       e_legend(orient = "vertical",
+                                type = "scroll",
+                                top = "15%",
+                                right = "5",
+                                selector = list(
+                                  list(type = 'inverse', title = 'Invert'),
+                                  list(type = 'all', title = 'Reset')
+                                )) %>% 
+                       e_theme("infographic") %>% 
+                       e_toolbox_feature("dataZoom") %>% 
+                       e_toolbox_feature(feature = "reset") %>% 
+                       e_toolbox_feature("dataView") %>% 
+                       e_toolbox_feature("saveAsImage")
+                     #   ggplot(aes(x = report_date, y = value)) +
+                     #   geom_point(
+                     #     aes(color = Ticker),
+                     #     size = 1.1,
+                     #     alpha = 0.7,
+                     #     na.rm = TRUE
+                     #   ) +
+                     #   geom_hline(aes(yintercept = Median),
+                     #              color = "red",
+                     #              linetype = "dotted") +
+                     #   expand_limits(y = c(min_value,
+                     #                       max_value * 1.2)) +
+                     #   labs(
+                     #     title = snakecase::to_title_case(as.character(ratio)),
+                     #     subtitle = industry,
+                     #     x = "",
+                     #     y = "%"
+                     #   ) +
+                     #   # theme_xkcd() +
+                     #   theme_minimal() +
+                     #   theme(axis.title.y = element_text(color = "grey")) #+
+                     # # xkcd::xkcdaxis(as.numeric(c(ymd("1999-12-31"),
+                     # #                  ymd("2021-12-31"))),
+                     # #                c(0, 1e10))
+                     # ggplotly(plt)
                      
                    })#, res = 96) #%>% bindCache(input$industry, input$ratio,
                    #input$remove_outliers)

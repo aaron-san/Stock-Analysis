@@ -19,7 +19,21 @@ read_tibble <- function(x, date_format = "%Y-%m-%d") {
 monthly_prices_file <- 
   list.files("data", pattern = "monthly_prices", full.names = TRUE) %>% max()
 monthly_prices <- read_tibble(monthly_prices_file)
-monthly_rets <- monthly_prices %>%  mutate(across(-date, ~.x / lag(.x) - 1))
+monthly_rets <- 
+  monthly_prices %>%  mutate(across(-date, ~.x / lag(.x) - 1)) %>% 
+  slice(-1)
+
+ret_stats <- 
+  monthly_rets %>% 
+  pivot_longer(-date, names_to = "ticker", 
+               values_to = "ret") %>% 
+  arrange(ticker, date) %>% 
+  group_by(ticker) %>%
+  summarize(mean_ret = mean(ret)*12,
+            sd = sd(ret)*sqrt(12),
+            dd = downside_deviation(ret),
+            max_drawdown = max_drawdown(ret)) %>%
+  mutate(across(where(is.numeric), ~round(.x, 3)))
 
 
 prices_from_FRED <- list.files("data", pattern = "Prices from FRED", full.names = TRUE) %>% max()
@@ -57,11 +71,26 @@ asset_rets <-
 
 
 # Load ratios
-ratios_file <- 
-  list.files("data/cleaned data", 
-             pattern = "ratios_final \\(\\d{4} \\d{2} \\d{2}\\)$", 
-             full.names = TRUE) %>% max()
-ratios <- read_feather(ratios_file)
+# ratios_file <- 
+#   list.files("data/cleaned data", 
+#              pattern = "ratios_final \\(\\d{4} \\d{2} \\d{2}\\)$", 
+#              full.names = TRUE) %>% max()
+# ratios <- read_feather(ratios_file)
+
+# ratios_sample <-
+#   ratios %>%
+#   filter(industry_damodaran %in% c("transportation", "steel", "software_entertainment"))
+
+# write_csv(ratios_sample, "data/cleaned data/ratios_sample.csv")
+
+ratios <- read_tibble("data/cleaned data/ratios_sample.csv")
+
+# set.seed(123)
+# ratios_sample <- 
+#   ratios %>% 
+#   group_by(industry_damodaran) %>% 
+#   filter(ticker %in% sample(ticker, 5))
+
 
 
 profiles_files <- list.files("data/cleaned data",

@@ -227,6 +227,7 @@ suppressWarnings({
   library(magrittr)
   library(slider)
   library(shinycssloaders)
+  library(echarts4r)
   # library(sever) # Disconnection message
 })
 
@@ -243,8 +244,9 @@ conflict_prefer("box", "shinydashboard", quiet = TRUE)
 
 
 # Load data
-source("data.R")
 source("code/helper functions.R")
+source("data.R")
+
 
 
 # Convert Sass to CSS

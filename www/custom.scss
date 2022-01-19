@@ -78,7 +78,7 @@ p {
 }
 
 /* header */
-.skin-red-light .main-header .logo {
+.skin-red .main-header .logo {
     font-family: 'Courier New', monospace; 
     color: white;
     /*'Times New Roman', Times, serif;*/
@@ -208,25 +208,23 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
     /*border: 2px solid lightsteelblue;*/
 }
 
-.skin-red-light .main-header .navbar  {
-    /*border: white 2px solid;*/
-    /*border-radius: 3%;*/
-    /*background: #ca5c48;*/
-    /*border: solid black 1px 1px 1px 0;*/
+.skin-red .main-header .navbar  {
+    background: #222d2985; //#ca5c48;
     border-bottom: solid white 2px;
+    border-bottom-right-radius: 15px;
 }
 
-/*.alert-success, .bg-green, .callout.callout-success, .label-success, .modal-success .modal-body {
-    background-color: deeppink!important;
+a:hover {
+    background-color: blue;
 }
 
-.bg-light-blue, .label-primary, .modal-primary .modal-body {
-    background-color: mistyrose!important;
+.skin-red .main-header .navbar .sidebar-toggle:hover {
+    color: gray;
+    background-color: pink;
+    -webkit-border-radius: 0 0 15px 0;
 }
 
-.bg-orange {
-    background-color: steelblue!important;
-}*/
+
 
 .small-box.bg-aqua { background-color: #79CDCD !important; }
 .small-box.bg-green { background-color: #EE3B3B !important; }
@@ -237,7 +235,6 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
     max-width: 250px;
 }
 
-
 .box {
     padding: 5px;
     //text-align: justify;
@@ -247,7 +244,6 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
     padding: 5px;
     text-align: start;
 }
-
 
 
 .navbar-test {
@@ -285,32 +281,15 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
 }
 
 
+.sidebar-toggle {
+    border-radius: 3px;
+}
 
 
 .sidebar-dark-danger .nav-sidebar>.nav-item>.nav-link.active, .sidebar-light-danger .nav-sidebar>.nav-item>.nav-link.active {
     background-color: $color-one;
     color: $color-five;
 }
-
-
-/* bar */
-/*.irs--shiny .irs-grid-text,
-.irs--shiny .irs-min, .irs--shiny .irs-max {
-    color: white;
-}*/
-
-
-
-
-/*
-.irs--shiny .irs-handle {
-  background-color: palegoldenrod;
-}
-
-.irs--shiny .irs-bar {
-  background: $color-five;
-}
-*/
 
 
 #decision_rule_input {
@@ -336,8 +315,6 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
     /*margin-top: auto;*/
     padding: 7px;
 }
-
-
 
 
 
