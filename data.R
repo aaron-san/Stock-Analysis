@@ -45,6 +45,21 @@ prices_combined <-
   pivot_longer(-date, names_to = "symbol", values_to = "price") %>% 
   full_join(prices_econ)
 
+tickers_file <- 
+  list.files("C:/Users/user/Desktop/Aaron/R/Projects/Fundamentals-Data/data",
+             pattern = "^Tickers.xlsx", full.names = TRUE)
+tickers <- readxl::read_xlsx(tickers_file)
+
+group_choices <- tickers %>% distinct(Security) %>% pull()
+
+prices_combined <-
+  prices_combined %>% 
+  left_join(tickers %>% rename(symbol = "Ticker")) %>% 
+  janitor::clean_names()
+
+prices_stocks <- prices_combined %>% filter(security == "Stock")
+prices_indexes <- prices_combined %>% filter(security == "Index")
+prices_etfs <- prices_combined %>% filter(security == "ETF")
 
 symbol_choices <- prices_combined %>% distinct(symbol) %>% pull()
 

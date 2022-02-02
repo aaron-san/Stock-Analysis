@@ -112,6 +112,10 @@ p {
   transition: background .2s ease-in-out;
 }
 
+.btn.dropdown-toggle.btn-default {
+  background-color: white;
+}
+
 .btn-default:hover,
 .btn-default.active {
   background-color: darksalmon;
@@ -172,7 +176,7 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
 /*-------*/
 .form-control, .form-control:focus {
   /*color: #22a7c5;*/
-  background-color: #f8f9fa;
+  /*background-color: #f8f9fa;*/
   /*border: 2px solid lightsteelblue;*/
 }
 
@@ -239,6 +243,13 @@ a:hover {
   align-self: flex-end;
 }
 
+/*.shiny-input-panel {
+    padding: 6px 8px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    background-color: #fef8ef;
+    border-radius: 2px;
+}*/
 .awesome-checkbox .checkbox-primary {
   align-items: center;
   vertical-align: middle;
@@ -249,12 +260,15 @@ a:hover {
   /*background-color: $color-two;*/
 }
 
+/*.sidebar {
+    position: fixed;
+}*/
 .sidebar-toggle {
   border-radius: 3px;
 }
 
 .sidebar-dark-danger .nav-sidebar > .nav-item > .nav-link.active, .sidebar-light-danger .nav-sidebar > .nav-item > .nav-link.active {
-  background-color: moccasin;
+  background-color: #343a40;
   color: #343a40;
 }
 
@@ -265,11 +279,6 @@ a:hover {
   color: white;
 }
 
-/*
-#backtest-signal_rule-label {
-    color: white;
-}
-*/
 .direct-chat .box-body {
   padding: 10px;
 }
@@ -279,23 +288,6 @@ a:hover {
   padding: 7px;
 }
 
-/*.row {
-    background-color: #272b30;
-}*/
-.box-body {
-  /*color: #f7f6f6;
-  background-color: #1c1e22;
-  display: flex;*/
-}
-
-/*.content-wrapper {
-    background-color: #1c1e22;
-}*/
-/*.input_card {
-    background-color: #272b30;
-    border-radius: 0 0 0.3rem 0.3rem;
-    color: white;
-}*/
 .bootstrap-select.form-control {
   margin: 0;
 }

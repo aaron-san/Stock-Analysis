@@ -3,24 +3,183 @@
 notes <- read_file("data/notes.txt")
 
 
+# plot <- 
+#   USArrests |>
+#   e_charts(UrbanPop) |>
+#   e_line(Assault) |>
+#   e_area(Murder, y_index = 1, x_index = 1) |>
+#   e_y_axis(gridIndex = 1) |>
+#   e_x_axis(gridIndex = 1) |>
+#   e_grid(height = "35%") |>
+#   e_grid(height = "35%", top = "50%") |>
+#   e_toolbox_feature("dataZoom", title = list(zoom = "zoom", back = "back")) |>
+#   e_datazoom(type = "slider", start = 20, end = 70)
+# 
+# 
+# plot %>% e_theme("vintage") **
+# plot %>% e_theme("shine") **
+# plot %>% e_theme_custom('{"color":["#ff715e","#ffaf51"]}')
 
 
+
+
+# Custom plot function
+custom_echart <- function(data, title, subtitle) {
+  
+  ####
+  # data <- 
+  #   ratios %>% 
+  #   filter(industry_damodaran == "transportation") %>%
+  #   select(ticker, report_date, cash_ratio) %>%
+  #   pivot_longer(where(is.numeric),
+  #                names_to = "ratio",
+  #                values_to = "value") %>%
+  #   drop_na(value)
+  ####
+  
+  data %>%
+    e_chart(x = report_date) %>%
+    e_line(serie = value,
+           symbol = 'emptyCircle',
+           symbolSize = 5) %>%
+    e_tooltip(trigger = "axis", backgroundColor = 'white') %>%
+    e_grid(right = "15%", top = "20%") %>%
+    e_title(text = title,
+            subtext = subtitle,
+            left = "center",
+            top = "5%") %>%
+    e_legend(
+      orient = "vertical",
+      type = "scroll",
+      top = "15%",
+      right = "5",
+      selector = list(
+        list(type = 'inverse', title = 'Invert'),
+        list(type = 'all', title = 'Reset')
+      )
+    ) %>%
+    e_datazoom(type = "slider", 
+               start = 70,
+               end = 100) %>% 
+    e_theme("shine") %>%
+    e_toolbox_feature("dataZoom", selector = list(
+      start = '20',
+      end = '80'
+    )) %>%
+    e_toolbox_feature(feature = "reset") %>%
+    e_toolbox_feature("dataView") %>%
+    e_toolbox_feature("saveAsImage")
+}
+
+
+
+plotUI <- function(id, ticker_choices, selected_tickers) {
+  tagList(
+    withSpinner(
+      echarts4rOutput(
+        NS(id, "plot"),
+        height = "400px"),
+      # click = ns("plot_click")),
+      type = 8,
+      color = "darkgray"
+    ),
+    # checkboxGroupButtons("group_choices", "Select group:",
+    #                      choices = group_choices),
+    div(
+      style = 'display:inline-block; vertical-align: top;',
+      pickerInput(
+        width = 240,
+        NS(id, "select"),
+        label = "Select Tickers:",
+        choices = sort(ticker_choices),
+        # choices = list(
+        #   Equities = c("SPY", "MDY", "IWM"),
+        #   `International & Emerging Markets` = c("EFA", "EEM"),
+        #   Bonds = c("AGG", "TIP", "TLT", "LQD"),
+        #   Commodities = "GSG",
+        #   `Real Estate` = c("RWR", "RWX", "MBB")),
+        selected = selected_tickers,
+        options = list(`actions-box` = TRUE),
+        multiple = TRUE
+      )
+    ), 
+    div(style = "display:inline-block; vertical-align: bottom;",
+        actionButton(NS(id, "apply"), "Apply"))
+  )
+}
+
+plotServer <- function(id, data, plot_title) {
+  moduleServer(id, function(input, output, session) {
+    
+    output$plot <- renderEcharts4r({
+      # Create dependency on actionButton
+      input$apply
+      
+      #####
+      # data <- prices_combined
+      # input <- list(select = "AMZN")
+      #####
+      
+      data %>% 
+        rename(ticker = symbol,
+               report_date = date,
+               value = price) %>% 
+        filter(ticker %in% isolate(input$select)) %>%
+        group_by(ticker) %>% 
+        e_chart(x = report_date) %>% 
+        e_line(serie = value, symbol = 'emptyCircle', symbolSize = 5) %>% 
+        e_tooltip(trigger="axis", backgroundColor = 'white') %>% 
+        e_grid(right = "15%", top = "20%") %>% 
+        e_title(text = plot_title,
+                subtext = "",
+                left = "center",
+                top = "5%") %>% 
+        e_legend(orient = "vertical",
+                 type = "scroll",
+                 top = "15%",
+                 right = "5",
+                 selector = list(
+                   list(type = 'inverse', title = 'Invert'),
+                   list(type = 'all', title = 'Reset')
+                 )) %>% 
+        e_datazoom(type = "slider", 
+                   start = 90,
+                   end = 100) %>%
+        e_theme("shine") %>% 
+        e_toolbox_feature("dataZoom") %>% 
+        e_toolbox_feature(feature = "reset") %>% 
+        e_toolbox_feature("dataView") %>% 
+        e_toolbox_feature("saveAsImage")
+    })
+  })
+}  
+
+
+  
+# ui <- fluidPage(
+#   sidebarLayout(
+#     sidebarPanel("hi"),
+#   mainPanel(
+#   plotUI(
+#     "plot1",
+#     ticker_choices = symbol_choices,
+#     selected_tickers = c("SPY", "MDY", "IWM")
+#   )
+# )))
+# 
+# server <- function(input, output, session) {
+#   plotServer("plot1", data = prices_combined)
+# }
+# 
+# shinyApp(ui, server)
+
+
+
+# UI ----------------------------------------------------------------------
 
 mod_charts_securities_ui <-
   function(id, industry_choices, ratio_choices) {
     ns <- NS(id)
-
-    # Reusable
-    inputPanel_ts_plot <- function(id, selected_symbs) {
-      inputPanel(
-        selectInput(ns(id),
-          "Variables:",
-          multiple = TRUE,
-          choices = sort(symbol_choices),
-          selected = selected_symbs
-        )
-      )
-    }
 
     tagList(
       waiter::use_waiter(),
@@ -33,50 +192,62 @@ mod_charts_securities_ui <-
             width = NULL,
             withSpinner(
             echarts4rOutput(ns("ratios_plot"),
-                            height = "500px"),
+                            height = "350px"),
                             # click = ns("plot_click")),
                             type = 8,
                             color = "darkgray"
-            )),
-          inputPanel(
-            selectInput(ns("industry"),
-              "Industry:",
-              choices = sort(industry_choices),
-              selected = "credit_services"
             ),
-            selectInput(ns("ratio"), "Field:",
-              choices = sort(ratio_choices),
-              selected = "roe"
+            div(style = "display:inline-block; vertical-align: top;",
+                selectInput(
+                  ns("industry"),
+                  "Industry:",
+                  choices = sort(industry_choices),
+                  selected = industry_choices[1],
+                  width = "200px"
+                )),
+            div(style = "display:inline-block; vertical-align: top;",
+                selectInput(
+                  ns("ratio"),
+                  "Field:",
+                  choices = sort(ratio_choices),
+                  selected = "cash_ratio",
+                  width = "200px"
+                )
             ),
-            checkboxInput(ns("remove_outliers"), "Remove outliers"),
-            actionButton(ns("update"), "Update!"),
-            actionButton(ns("toggle_table"), "Show/Hide table"),
-            tags$button("Show alert", onclick="alertGo()"),
-            tags$button("Show conf", onclick="confirmDial()")
+            div(style = "display:inline-block; vertical-align: bottom;",
+                checkboxInput(ns("remove_outliers"), "Remove outliers")
+            ),
+            div(
+              div(style = "display:inline-block; vertical-align: top;",
+                actionButton(ns("apply_ratios"), "Apply!")
+              ),
+              div(style = "display:inline-block; vertical-align: top;",
+                actionButton(ns("showhide"), "Show/Hide table")
+                )
+            ),
+            hidden(
+              htmlOutput(ns("html_break")),
+              shiny::dataTableOutput(ns("ratio_table"))
+            )
+            # tags$button("Show alert", onclick="alertGo()"),
+            # tags$button("Show conf", onclick="confirmDial()")
           ),
-          hidden(
-            shiny::dataTableOutput(ns("ratio_table"))
-          ),
-            # tableOutput(ns("ratio_data")),
-          inputPanel_ts_plot(
-            id = "ts_plot_1_vars",
-            selected_symbs = c("VIXY", "WOOD", "SOFI")
-          ),
-          withSpinner(
-            plotOutput(ns("ts_plot_1"), height = "300px"),
-            type = 8, color = "lightgreen"
-          ),
-          inputPanel_ts_plot(
-            id = "ts_plot_2_vars",
-            selected_symbs = c(
-              "FEDFUNDS", "UNRATE",
-              "U6RATE"
+          box(
+            width = NULL,
+            plotUI(
+              ns("plot_indexes"),
+              ticker_choices = prices_indexes %>% distinct(symbol) %>% pull(),
+              selected_tickers = c("^DJI", "^SP500TR", "^TYX")
             )
           ),
-          withSpinner(
-            plotOutput(ns("ts_plot_2"), height = "300px"),
-            type = 8, color = "lightgreen"
-          )
+          box(
+            width = NULL,
+            plotUI(
+              ns("plot_stocks"),
+              ticker_choices = prices_stocks %>% distinct(symbol) %>% pull(),
+              selected_tickers = c("GOOG", "AMD", "LOW", "TREE", "ZM")
+            )
+        )
         ),
         column(
           width = 5,
@@ -119,22 +290,6 @@ mod_charts_securities_ui <-
                 )
                 )
             )
-          ),
-          inputPanel_ts_plot(
-            id = "ts_plot_3_vars",
-            selected_symbs = c("GLD", "SLV")
-          ),
-          withSpinner(
-            plotOutput(ns("ts_plot_3"), height = "300px"),
-            type = 8, color = "lightgreen"
-          ),
-          inputPanel_ts_plot(
-            id = "ts_plot_4_vars",
-            selected_symbs = c("M1", "M2", "M1V", "M2V")
-          ),
-          withSpinner(
-            plotOutput(ns("ts_plot_4"), height = "300px"),
-            type = 8, color = "lightgreen"
           )
         )
       )
@@ -147,17 +302,16 @@ mod_charts_securities_server <-
     moduleServer(id,
                  function(input, output, session) {
                    ns <- NS(id)
-                   
+
                    ratios_data <- reactive({
                      ######
                      # input <- list(industry = "retail_general",
                      #               ratio = "revenue_1Y")
                      ######
+                     input$apply_ratios
                      
-                     input$update
-                     
-                     ratios %>% 
-                       filter(industry_damodaran == isolate(input$industry)) %>% 
+                     ratios %>%
+                       filter(industry_damodaran == isolate(input$industry)) %>%
                        select(ticker, report_date, isolate(input$ratio)) %>%
                        pivot_longer(where(is.numeric),
                                     names_to = "ratio",
@@ -166,18 +320,11 @@ mod_charts_securities_server <-
                        mutate(value = signif(value, 2),
                               Median = signif(median(value,
                                                      na.rm = TRUE)),
-                              2) %>%
-                       rename(Ticker = ticker)
+                              2)
                    })
-                   
+
                    plot_data <- reactive({
-                     # Don't create reactive data until actionButton is
-                     #  clicked
-                     # input$update
-                     
-                     # waiter::Waiter$new(id = ns("ratios_plot"),
-                     #                    html = spin_ripple())$show()
-                     
+
                      if (!isolate(input$remove_outliers)) {
                        ratios_data()
                      } else {
@@ -188,158 +335,71 @@ mod_charts_securities_server <-
                            value > quantile(value, 0.025,
                                             na.rm = TRUE)
                          )
-                         
                      }
                    })
-                   
-                   
+
                    max_value <- reactive({
                      plot_data() %>% pull(value) %>% max(na.rm = TRUE)
                    })
-                   
+
                    min_value <- reactive({
                      plot_data() %>% pull(value) %>% min(na.rm = TRUE) %>%
                        {
                          . - (max_value() * 1.2 - max_value())
                        }
                    })
-                   
-                   
-                   
-                   
-                   
-                   
+
                    output$ratios_plot <- renderEcharts4r({
-                     # Don't create plot outline until actionbButton is
-                     #  clicked
-                     input$update
-                     
-                     # isolate({
-                       # ratio <- input$ratio
-                       # industry <- input$industry
-                       # min_value <- min_value()
-                       # max_value <- max_value()
-                     # })
-                     
+                     # Create dependency on actionbButton
+                     input$apply_ratios
+
                      plot_data() %>%
-                       group_by(Ticker) %>% 
-                       e_chart(x = report_date) %>% 
-                       e_line(serie = value) %>% 
-                       # e_scatter(serie = value, 
-                       #           symbol_size = 5, 
-                       #           legend = FALSE) %>% 
-                       e_tooltip() %>% #trigger="axis") %>% 
-                       e_grid(right = "15%") %>% 
-                       e_title(text = "fields",
-                               subtext = "wow",
-                               left = "center") %>% 
-                       e_legend(orient = "vertical",
-                                type = "scroll",
-                                top = "15%",
-                                right = "5",
-                                selector = list(
-                                  list(type = 'inverse', title = 'Invert'),
-                                  list(type = 'all', title = 'Reset')
-                                )) %>% 
-                       e_theme("infographic") %>% 
-                       e_toolbox_feature("dataZoom") %>% 
-                       e_toolbox_feature(feature = "reset") %>% 
-                       e_toolbox_feature("dataView") %>% 
-                       e_toolbox_feature("saveAsImage")
-                     #   ggplot(aes(x = report_date, y = value)) +
-                     #   geom_point(
-                     #     aes(color = Ticker),
-                     #     size = 1.1,
-                     #     alpha = 0.7,
-                     #     na.rm = TRUE
-                     #   ) +
-                     #   geom_hline(aes(yintercept = Median),
-                     #              color = "red",
-                     #              linetype = "dotted") +
-                     #   expand_limits(y = c(min_value,
-                     #                       max_value * 1.2)) +
-                     #   labs(
-                     #     title = snakecase::to_title_case(as.character(ratio)),
-                     #     subtitle = industry,
-                     #     x = "",
-                     #     y = "%"
-                     #   ) +
-                     #   # theme_xkcd() +
-                     #   theme_minimal() +
-                     #   theme(axis.title.y = element_text(color = "grey")) #+
-                     # # xkcd::xkcdaxis(as.numeric(c(ymd("1999-12-31"),
-                     # #                  ymd("2021-12-31"))),
-                     # #                c(0, 1e10))
-                     # ggplotly(plt)
-                     
-                   })#, res = 96) #%>% bindCache(input$industry, input$ratio,
-                   #input$remove_outliers)
-                   
-                   
-                   # output$ratio_data <- renderTable({
-                   #     # Don't print table outline until plot is clicked
-                   #     req(input$plot_click)
-                   #     data_to_print <- plot_data() %>%
-                   #         select(Ticker, report_date,
-                   #                ratio, value)
-                   #     nearPoints(data_to_print, input$plot_click,
-                   #                maxpoints = 1)
-                   #
+                       group_by(ticker) %>%
+                       custom_echart(
+                         title = isolate(input$ratio),
+                         subtitle = paste("Industry: ", isolate(input$industry)))
+
+                   })
+
+                  #  Demonstrate on different blog article!
+#                    output$ratio_table <- renderTable({
+#                        # Don't print table outline until plot is clicked
+#                        req(input$plot_click)
+#                        data_to_print <- plot_data() %>%
+#                            select(Ticker, report_date,
+#                                   ratio, value)
+#                        nearPoints(data_to_print, input$plot_click,
+#                                   maxpoints = 1)
+# 
                    # })
+
+
+                   output$html_break <- renderUI({
+                     HTML("<hr>")
+                   })
                    
-                   
-                   
+                   observeEvent(input$showhide, {
+                     toggle("html_break")
+                   })
                    
                    output$ratio_table <- renderDataTable({
-                     req(input$update)
-                     # input$data_table
-                     plot_data()
+                     input$apply_ratios
+                     
+                      plot_data()
                    }, options = list(pageLength = 10))
-                   
-                   observeEvent(input$toggle_table, {
-                     # hide(ns("ratio_table"))
+
+                   observeEvent(input$showhide, {
                      toggle("ratio_table")
                    })
                    
                    
                    
-                   output$ts_plot_1 <- renderPlot({
-                     # waiter::Waiter$new(id = ns("ts_plot_1"),
-                     #                    html = spin_ripple())$show()
-                     prices_combined %>%
-                       filter(symbol %in% input$ts_plot_1_vars) %>%
-                       ggplot(aes(x = date, y = price, color = symbol)) +
-                       geom_line(na.rm = TRUE)
-                     
-                   }, res = 96)
-                   
-                   output$ts_plot_2 <- renderPlot({
-                     # waiter::Waiter$new(id = ns("ts_plot_2"),
-                     #                    html = spin_ripple())$show()
-                     prices_combined %>%
-                       filter(symbol %in% input$ts_plot_2_vars) %>%
-                       ggplot(aes(x = date, y = price, color = symbol)) +
-                       geom_line(na.rm = TRUE)
-                     
-                   }, res = 96)
-                   
-                   output$ts_plot_3 <- renderPlot({
-                     prices_combined %>%
-                       filter(symbol %in% input$ts_plot_3_vars) %>%
-                       ggplot(aes(x = date, y = price, color = symbol)) +
-                       geom_line(na.rm = TRUE)
-                     
-                   }, res = 96)
-                   
-                   output$ts_plot_4 <- renderPlot({
-                     prices_combined %>%
-                       filter(symbol %in% input$ts_plot_4_vars) %>%
-                       ggplot(aes(x = date, y = price, color = symbol)) +
-                       geom_line(na.rm = TRUE)
-                     
-                   }, res = 96)
-                   
-                   
+
+                   plotServer("plot_indexes", data = prices_indexes,
+                              plot_title = "Index prices")
+                   plotServer("plot_stocks", data = prices_stocks,
+                              plot_title = "Stock prices")
+
                    # Ticker lookup
                    ticker_lookup <-
                      reactive({
@@ -349,7 +409,7 @@ mod_charts_securities_server <-
                      profile_data %>%
                        filter(ticker == ticker_lookup())
                    })
-                   
+
                    output$ticker_profile <- renderUI({
                      req(input$ticker_lookup)
                      tagList(
@@ -381,16 +441,16 @@ mod_charts_securities_server <-
                        )
                      )
                    })
-                   
+
                    output$formula_name <- renderText({
                      req(input$update)
                      isolate(input$ratio)
                    })
-                   
+
                    output$formula <- renderText(ratio_functions[[input$ratio]])
-                   
+
                    output$formula_guide <- renderText(ratio_guide[[input$ratio]])
-                   
+
                    observeEvent(input$save_notes, {
                      write_file(input$notes, "data/notes.txt")
                    })

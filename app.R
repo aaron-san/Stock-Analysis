@@ -205,7 +205,6 @@ rm(list = ls())
 suppressWarnings({
   library(shiny)
   library(shinydashboard)
-  # library(shinydashboardPlus)
   library(waiter) # spin_ripple()
   library(sparkline)
   library(shinyjs)
@@ -286,7 +285,7 @@ ui <- tagList(
             # Image file should be in www/ subdir
             image = "profile_pic.jpeg"
         ),
-        sidebarSearchForm(label = "Enter a number", "searchText", "searchButton"),
+        # sidebarSearchForm(label = "Enter a number", "searchText", "searchButton"),
         sidebarMenu(
             # Setting id makes input$tabs give the tabName of currently-selected tab
             id = "tabs",
