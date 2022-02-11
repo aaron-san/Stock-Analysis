@@ -228,6 +228,7 @@ suppressWarnings({
   library(shinycssloaders)
   library(echarts4r)
   # library(sever) # Disconnection message
+  library(conflicted)
 })
 
 
@@ -238,7 +239,9 @@ lapply(
         source(x)
 )
 
+conflict_prefer_all("dplyr", quiet = TRUE)
 conflict_prefer("box", "shinydashboard", quiet = TRUE)
+conflict_prefer("renderDataTable", "shiny", quiet = TRUE)
 
 
 

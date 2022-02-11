@@ -1,9 +1,4 @@
 
-renderDataTable <- shiny::renderDataTable
-withTags <- shiny::withTags
-
-
-
 
 
 mod_returns_returns_ui <- function(id, ticker_choices) {

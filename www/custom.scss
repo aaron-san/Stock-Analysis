@@ -8,26 +8,31 @@ $color-five: #343a40; /*dark gray shade*/
 $light-grey: #ecf0f5;
 
 
+
+/*.shiny-input-panel {
+    padding: 6px 8px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    background-color: #fef8ef;
+    border-radius: 2px;
+}*/
+
+
 .main-header {
     position: fixed;
-    margin-bottom: 50px;
+    width: 230px;
 }
 /*.main-header .logo { 
     margin: 3px;
     box-shadow: 2px 5px 10x grey;
 }
 
-.main-header .navbar {
-    margin: 3px;
-    box-shadow: 2px 5px 10x grey;
-}*/
-
 body { 
 	font-family: $font-stack;
 	color: $color-five;
 	/*display: inline-block;*/
-    /*margin: 1px;  122px * .1; */
-}
+    /*margin: 1px;  122px * .1; 
+}*/
 
 
 
@@ -35,6 +40,9 @@ p {
     margin: 0;
 }
 
+a {
+    color: blue;
+}
 .row {
     display: flex;
     align-items: flex-start;
@@ -62,20 +70,8 @@ p {
     margin-right: 15px;
 }
 
-.main-header .navbar{
-    /*background-color: ;*/
-    max-height: 0;
-    /*width: 100%;*/
-    /*min-height: 75px;*/
-    /*border-radius: 2%;*/
-    /*margin-bottom: -1px;*/
-    /*padding-bottom: 10px;
-    /*position: relative;*/
-    /*border-top: solid black 1px;
-    border-right: solid black 1px;
-    border-bottom: solid black 1px;*/
-    
-}
+
+
 
 /* header */
 .skin-red .main-header .logo {
@@ -144,11 +140,6 @@ p {
     transition: background .2s ease-in-out;
 }
 
-.btn.dropdown-toggle.btn-default {
-    background-color: white;
-}
-
-
 .btn-default:hover, 
 .btn-default.active {
     background-color: $color-three;
@@ -200,6 +191,11 @@ btn-light:not(:disabled):not(.disabled):active,
     margin: 10px 8px 5px 8px; /*30px;*/
 }
 
+.btn.dropdown-toggle.btn-default {
+    background-color: white;
+}
+
+
 body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
     margin: 3px;
 }
@@ -209,25 +205,57 @@ body > div.wrapper > nav > ul.navbar-nav.ml-auto > .action-button {
 
 .form-control, .form-control:focus {
     /*color: #22a7c5;*/
-    /*background-color: #f8f9fa;*/
+    background-color: #f8f9fa;
     /*border: 2px solid lightsteelblue;*/
 }
 
 .skin-red .main-header .navbar  {
-    background: #222d2985; //#ca5c48;
-    border-bottom: solid white 2px;
-    border-bottom-right-radius: 15px;
+    background: none; //#ca5c48;
+    /*border-bottom: solid white 2px;*/
+    /*border-bottom-right-radius: 15px;*/
 }
 
 a:hover {
     background-color: blue;
 }
 
+
+.skin-red .main-header .navbar .sidebar-toggle {
+    color: #fff;
+    width: 42px;
+    height: 50px;
+    position: fixed;
+    top: 0;
+    left: 230px;
+    background-color: #999;
+    border-bottom: solid white 2px;
+    border-right: solid white 2px;
+    border-bottom-right-radius: 15px;
+    border-radius: 3px;
+     -webkit-border-radius: 0 0 15px 0;
+}
+
+
+.main-header .navbar {
+    /* margin: 0; */
+}
+
+
+.main-header .logo, .main-header .navbar {
+     width: 100%; 
+     float: top; 
+}
+
 .skin-red .main-header .navbar .sidebar-toggle:hover {
     color: gray;
     background-color: pink;
     -webkit-border-radius: 0 0 15px 0;
+    border-bottom: 2px solid white;
+    border-right: 2px solid white;
+    height: 50px;
 }
+
+
 
 
 
@@ -271,17 +299,6 @@ a:hover {
   align-self: flex-end;
 }
 
-/*.shiny-input-panel {
-    padding: 6px 8px;
-    margin-top: 6px;
-    margin-bottom: 6px;
-    background-color: #fef8ef;
-    border-radius: 2px;
-}*/
-
-
-
-
 
 
 .awesome-checkbox .checkbox-primary {
@@ -297,13 +314,17 @@ a:hover {
 }
 
 
-/*.sidebar {
-    position: fixed;
-}*/
-
-.sidebar-toggle {
-    border-radius: 3px;
+.sidebar {
+    /*position: fixed;*/
 }
+
+@media (max-width: 767px) {
+    .left-side, .main-sidebar {
+         padding-top: 50px; 
+    }    
+}
+
+
 
 
 .sidebar-dark-danger .nav-sidebar>.nav-item>.nav-link.active, .sidebar-light-danger .nav-sidebar>.nav-item>.nav-link.active {
